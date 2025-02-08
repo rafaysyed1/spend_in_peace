@@ -27,3 +27,25 @@ export async function sendVerificationEmail(email: string, verificationCode: str
     throw new Error('Failed to send verification email');
   }
 }
+
+
+export async function sendResetPasswordEmail(email: string, resetCode: string) {
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'Password Reset - Spend In Peace',
+      html: `
+        <h1>Password Reset</h1>
+        <p>Your password reset code is: <strong>${resetCode}</strong></p>
+        <p>This code will expire in 1 hour.</p>
+        <p>If you didn't request this, please ignore this email.</p>
+      `,
+    };
+  
+    try {
+      await transporter.sendMail(mailOptions);
+    } catch (error) {
+      console.error('Error sending reset email:', error);
+      throw new Error('Failed to send reset email');
+    }
+  }
