@@ -8,6 +8,7 @@ export default withAuth(
 
     // Redirect authenticated users away from auth pages
     if (token && (
+      pathname === "/" ||
       pathname === "/login" || 
       pathname === "/signup" || 
       pathname === "/reset-password"
