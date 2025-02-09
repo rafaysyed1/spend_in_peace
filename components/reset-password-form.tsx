@@ -3,47 +3,85 @@
 import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import * as z from "zod"
+import { ResetPasswordRequestSchema, ResetPasswordSchema } from "@/lib/validations/auth"
+import type { ResetPasswordRequestInput, ResetPasswordInput } from "@/lib/validations/auth"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
-
-const emailSchema = z.object({
-  email: z.string().email({ message: "Invalid email address" }),
-})
-
-const resetSchema = z.object({
-  code: z.string().length(6, { message: "Code must be 6 characters" }),
-  password: z.string().min(8, { message: "Password must be at least 8 characters" }),
-})
+import { useRouter } from "next/navigation"
+import { useToast } from "@/hooks/use-toast"
+import axios from "axios"
 
 export default function ResetPasswordForm() {
+  const router = useRouter()
+  const { toast } = useToast()
   const [step, setStep] = useState<"email" | "reset">("email")
+  const [email, setEmail] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
 
-  const emailForm = useForm<z.infer<typeof emailSchema>>({
-    resolver: zodResolver(emailSchema),
+  const emailForm = useForm<ResetPasswordRequestInput>({
+    resolver: zodResolver(ResetPasswordRequestSchema),
     defaultValues: {
       email: "",
     },
   })
 
-  const resetForm = useForm<z.infer<typeof resetSchema>>({
-    resolver: zodResolver(resetSchema),
+  const resetForm = useForm<Omit<ResetPasswordInput, "email">>({
+    resolver: zodResolver(
+      ResetPasswordSchema.omit({ email: true })
+    ),
     defaultValues: {
       code: "",
-      password: "",
+      newPassword: "",
     },
   })
 
-  function onEmailSubmit(values: z.infer<typeof emailSchema>) {
-    console.log(values)
-    setStep("reset")
+  async function onEmailSubmit(values: ResetPasswordRequestInput) {
+    try {
+      setIsLoading(true)
+      await axios.post("/api/auth/reset-password-request", values)
+      
+      setEmail(values.email)
+      toast({
+        title: "Success",
+        description: "If an account exists with this email, you will receive a reset code.",
+      })
+      setStep("reset")
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.response?.data?.error || "Something went wrong",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  function onResetSubmit(values: z.infer<typeof resetSchema>) {
-    console.log(values)
-    // Handle password reset
+  async function onResetSubmit(values: Omit<ResetPasswordInput, "email">) {
+    try {
+      setIsLoading(true)
+      await axios.post("/api/auth/reset-password", {
+        email,
+        ...values,
+      })
+
+      toast({
+        title: "Success",
+        description: "Your password has been reset successfully.",
+      })
+
+      router.push("/login")
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.response?.data?.error || "Something went wrong",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -58,20 +96,31 @@ export default function ResetPasswordForm() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter your email" {...field} />
+                    <Input 
+                      placeholder="Enter your email" 
+                      {...field}
+                      disabled={isLoading}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full">
-              Request Reset Code
+            <Button 
+              type="submit" 
+              className="w-full"
+              disabled={isLoading}
+            >
+              {isLoading ? "Sending..." : "Request Reset Code"}
             </Button>
           </form>
         </Form>
       ) : (
         <Form {...resetForm}>
           <form onSubmit={resetForm.handleSubmit(onResetSubmit)} className="space-y-4">
+            <div className="text-sm text-muted-foreground mb-4">
+              Reset code has been sent to {email}
+            </div>
             <FormField
               control={resetForm.control}
               name="code"
@@ -79,7 +128,11 @@ export default function ResetPasswordForm() {
                 <FormItem>
                   <FormLabel>Reset Code</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter the 6-digit code" {...field} />
+                    <Input 
+                      placeholder="Enter the 6-digit code" 
+                      {...field}
+                      disabled={isLoading}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -87,29 +140,51 @@ export default function ResetPasswordForm() {
             />
             <FormField
               control={resetForm.control}
-              name="password"
+              name="newPassword"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>New Password</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="Enter your new password" {...field} />
+                    <Input 
+                      type="password" 
+                      placeholder="Enter your new password" 
+                      {...field}
+                      disabled={isLoading}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full">
-              Reset Password
-            </Button>
+            <div className="space-y-2">
+              <Button 
+                type="submit" 
+                className="w-full"
+                disabled={isLoading}
+              >
+                {isLoading ? "Resetting..." : "Reset Password"}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                className="w-full"
+                onClick={() => setStep("email")}
+                disabled={isLoading}
+              >
+                Try Different Email
+              </Button>
+            </div>
           </form>
         </Form>
       )}
       <div className="mt-4 text-center">
-        <Link href="/login" className="text-sm text-primary hover:underline">
+        <Link 
+          href="/login" 
+          className="text-sm text-primary hover:underline"
+        >
           Back to Login
         </Link>
       </div>
     </div>
   )
 }
-
