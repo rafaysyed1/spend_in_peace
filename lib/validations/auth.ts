@@ -8,11 +8,16 @@ export const RegisterUserSchema = z.object({
   password: z
     .string()
     .min(8, "Password must be at least 8 characters")
+    .max(100, "Password cannot exceed 100 characters")
     .regex(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-      "Password must contain at least one uppercase letter, one lowercase letter, one number and one special character"
-    ),
-});
+      "Password must contain at least one uppercase letter, one lowercase letter, one number and one special character"),
+      confirmPassword: z.string(),
+})
+.refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"]
+})
 
 export type RegisterUserInput = z.infer<typeof RegisterUserSchema>;
 

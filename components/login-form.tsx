@@ -27,10 +27,10 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogCancel
+  AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
-import { InputOTP, InputOTPSlot } from "@/components/ui/input-otp"
-
+import { InputOTP, InputOTPSlot } from "@/components/ui/input-otp";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -40,19 +40,20 @@ export default function LoginForm() {
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   const [showVerifyDialog, setShowVerifyDialog] = useState(false);
   const [unverifiedEmail, setUnverifiedEmail] = useState("");
-  const [verificationCode, setVerificationCode] = useState("")
-  const [countdown, setCountdown] = useState(0)
-  const [verifying, setVerifying] = useState(false)
+  const [verificationCode, setVerificationCode] = useState("");
+  const [countdown, setCountdown] = useState(0);
+  const [verifying, setVerifying] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Add countdown effect
   useEffect(() => {
     if (countdown > 0) {
       const timer = setInterval(() => {
-        setCountdown((current) => current - 1)
-      }, 1000)
-      return () => clearInterval(timer)
+        setCountdown((current) => current - 1);
+      }, 1000);
+      return () => clearInterval(timer);
     }
-  }, [countdown])
+  }, [countdown]);
 
   const form = useForm<LoginInput>({
     resolver: zodResolver(LoginSchema),
@@ -70,8 +71,6 @@ export default function LoginForm() {
         password: values.password,
         redirect: false,
       });
-
-      
 
       if (response?.error) {
         // Check if the error is about unverified email
@@ -108,75 +107,78 @@ export default function LoginForm() {
   }
 
   async function handleResendVerification() {
-    if (countdown > 0) return
+    if (countdown > 0) return;
 
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const response = await axios.post("/api/auth/resend-code", {
         email: unverifiedEmail,
-      })
+      });
 
       toast({
         title: "Success",
-        description: "Verification email has been resent. Please check your inbox.",
-      })
-      setCountdown(60) // Start 60 second countdown
+        description:
+          "Verification email has been resent. Please check your inbox.",
+      });
+      setCountdown(60); // Start 60 second countdown
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.response?.data?.error || "Failed to resend verification email",
+        description:
+          error.response?.data?.error || "Failed to resend verification email",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
   async function handleVerifyCode() {
-    if (!verificationCode || verificationCode.length !== 6) return
-  
+    if (!verificationCode || verificationCode.length !== 6) return;
+
     try {
-      setVerifying(true)
+      setVerifying(true);
       // First verify the email
       await axios.post("/api/auth/verify-email", {
         email: unverifiedEmail,
         code: verificationCode,
-      })
-  
+      });
+
       // Then automatically sign in the user
       const response = await signIn("credentials", {
         email: unverifiedEmail,
         password: form.getValues("password"), // Get password from form
         redirect: false,
-      })
-  
+      });
+
       if (response?.error) {
         toast({
           title: "Error",
-          description: "Email verified but login failed. Please try logging in again.",
+          description:
+            "Email verified but login failed. Please try logging in again.",
           variant: "destructive",
-        })
-        setShowVerifyDialog(false)
-        return
+        });
+        setShowVerifyDialog(false);
+        return;
       }
-  
+
       toast({
         title: "Success",
         description: "Email verified and logged in successfully.",
-      })
-  
-      setShowVerifyDialog(false)
-      setVerificationCode("")
-      router.push(callbackUrl)
-      router.refresh()
+      });
+
+      setShowVerifyDialog(false);
+      setVerificationCode("");
+      router.push(callbackUrl);
+      router.refresh();
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.response?.data?.error || "Invalid verification code",
         variant: "destructive",
-      })
+      });
     } finally {
-      setVerifying(false)
+      setVerifying(false);
     }
   }
 
@@ -208,12 +210,28 @@ export default function LoginForm() {
               <FormItem>
                 <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <Input
-                    type="password"
-                    placeholder="Enter your password"
-                    {...field}
-                    disabled={isLoading}
-                  />
+                  <div className="relative">
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Enter your password"
+                      {...field}
+                      disabled={isLoading}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      onClick={() => setShowPassword(!showPassword)}
+                      disabled={isLoading}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </Button>
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -246,10 +264,11 @@ export default function LoginForm() {
           <AlertDialogHeader>
             <AlertDialogTitle>Email Verification Required</AlertDialogTitle>
             <AlertDialogDescription>
-              Please enter the 6-digit verification code sent to {unverifiedEmail}
+              Please enter the 6-digit verification code sent to{" "}
+              {unverifiedEmail}
             </AlertDialogDescription>
           </AlertDialogHeader>
-          
+
           <div className="flex flex-col gap-4 py-4">
             <InputOTP
               maxLength={6}
@@ -261,7 +280,7 @@ export default function LoginForm() {
                 <InputOTPSlot key={i} index={i} />
               ))}
             </InputOTP>
-            
+
             <div className="flex flex-col gap-2">
               <Button
                 onClick={handleVerifyCode}
@@ -270,7 +289,7 @@ export default function LoginForm() {
               >
                 {verifying ? "Verifying..." : "Verify Email"}
               </Button>
-              
+
               <Button
                 variant="outline"
                 onClick={handleResendVerification}
