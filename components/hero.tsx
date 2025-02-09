@@ -1,30 +1,64 @@
+"use client"
+
 import { Button } from "@/components/ui/button"
-import { ArrowRight } from "lucide-react"
+import { motion } from "framer-motion"
+import { FileText, Sparkles } from "lucide-react"
+import { FloatingPaper } from "@/components/floating-paper"
+import { RoboAnimation } from "@/components/robo-animation"
 
 export default function Hero() {
   return (
-    <section className="container flex min-h-[calc(100vh-3.5rem)] max-w-screen-2xl flex-col items-center justify-center space-y-8 py-24 text-center md:py-32">
-      <div className="space-y-4">
-        <h1 className="bg-gradient-to-br from-foreground from-30% via-foreground/90 to-foreground/70 bg-clip-text text-4xl font-bold tracking-tight text-transparent sm:text-5xl md:text-6xl lg:text-7xl">
-          Spend Smart with
-          <br />
-          Spend in Peace
-        </h1>
-        <p className="mx-auto max-w-[42rem] leading-normal text-muted-foreground sm:text-xl sm:leading-8">
-          Empowering businesses with cutting-edge software solutions. From AI-driven analytics to seamless cloud
-          integrations, we're shaping the future of technology.
-        </p>
+    <div className="relative min-h-[calc(100vh-76px)] flex items-center">
+      {/* Floating papers background */}
+      <div className="absolute inset-0 overflow-hidden">
+        <FloatingPaper count={6} />
       </div>
-      <div className="flex gap-4">
-        <Button size="lg">
-          Explore Solutions
-          <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
-        <Button variant="outline" size="lg">
-          Schedule a Demo
-        </Button>
+
+      <div className="container mx-auto px-6 relative z-10">
+        <div className="max-w-4xl mx-auto text-center">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6">
+              Spend Your Money with
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
+                {" "}
+                Spend In Piece
+              </span>
+            </h1>
+          </motion.div>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="text-gray-400 text-xl mb-8 max-w-2xl mx-auto"
+          >
+            Upload your research papers and let our AI transform them into engaging presentations, podcasts, and visual
+            content.
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4"
+          >
+            <Button size="lg" className="bg-purple-600 hover:bg-purple-700 text-white px-8">
+              <FileText className="mr-2 h-5 w-5" />
+              Upload Paper
+            </Button>
+            <Button size="lg" variant="outline" className="text-white border-purple-500 hover:bg-purple-500/20">
+              <Sparkles className="mr-2 h-5 w-5" />
+              See Examples
+            </Button>
+          </motion.div>
+        </div>
       </div>
-    </section>
+
+      {/* Animated robot */}
+      <div className="absolute bottom-0 right-0 w-96 h-96">
+        <RoboAnimation />
+      </div>
+    </div>
   )
 }
 

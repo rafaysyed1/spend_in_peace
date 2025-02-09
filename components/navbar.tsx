@@ -1,47 +1,50 @@
-import Link from "next/link"
+"use client"
+
 import { Button } from "@/components/ui/button"
-import { Github } from "lucide-react"
+import { DollarSign , Menu } from "lucide-react"
+import { motion } from "framer-motion"
+import Link from "next/link"
+import type React from "react" // Added import for React
 
 export default function Navbar() {
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 max-w-screen-2xl items-center">
-        <Link href="/" className="mr-6 flex items-center space-x-2">
-          <span className="font-bold">Amane Soft</span>
-        </Link>
-        <nav className="flex flex-1 items-center space-x-6 text-sm font-medium">
-          <Link href="/solutions" className="transition-colors hover:text-primary">
-            Solutions
-          </Link>
-          <Link href="/industries" className="transition-colors hover:text-primary">
-            Industries
-          </Link>
-          <Link href="/about" className="transition-colors hover:text-primary">
-            About Us
-          </Link>
-        </nav>
-        <div className="flex items-center space-x-4">
-          <Link href="https://github.com/amanesoft" target="_blank" rel="noreferrer">
-            <Button variant="ghost" size="icon">
-              <Github className="h-4 w-4" />
-              <span className="sr-only">GitHub</span>
-            </Button>
-          </Link>
-          <Button variant="ghost" size="sm">
-            Contact
-          </Button>
-          <Button size="sm">Get a Demo</Button>
-          <Link href="/login">
-            <Button variant="outline" size="sm">
-              Login
-            </Button>
-          </Link>
-          <Link href="/signup">
-            <Button size="sm">Sign Up</Button>
-          </Link>
-        </div>
+    <motion.nav
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      className="flex items-center justify-between px-6 py-4 backdrop-blur-sm border-b border-white/10"
+    >
+      <Link href="/" className="flex items-center space-x-2">
+        <DollarSign  className="w-8 h-8 text-purple-500" />
+        <span className="text-white font-medium text-xl">Spend in Peace</span>
+      </Link>
+
+      <div className="hidden md:flex items-center space-x-8">
+        <NavLink href="/features">Features</NavLink>
+        <NavLink href="/how-it-works">How it Works</NavLink>
+        <NavLink href="/examples">Examples</NavLink>
+        <NavLink href="/pricing">Pricing</NavLink>
       </div>
-    </header>
+
+      <div className="hidden md:flex items-center space-x-4">
+        <Button variant="ghost" className="text-white hover:text-purple-400">
+          Sign In
+        </Button>
+        <Button className="bg-purple-600 hover:bg-purple-700 text-white">Get Started</Button>
+      </div>
+
+      <Button variant="ghost" size="icon" className="md:hidden text-white">
+        <Menu className="w-6 h-6" />
+      </Button>
+    </motion.nav>
+  )
+}
+
+function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Link href={href} className="text-gray-300 hover:text-white transition-colors relative group">
+      {children}
+      <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-purple-500 transition-all group-hover:w-full" />
+    </Link>
   )
 }
 
