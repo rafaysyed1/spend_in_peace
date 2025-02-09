@@ -33,6 +33,7 @@ export default function SignupForm() {
       
       // Store email in sessionStorage for verification page
       sessionStorage.setItem('verificationEmail', values.email)
+      sessionStorage.setItem('tempPassword', values.password); // Will be removed after verification
       
       toast({
         title: "Success",

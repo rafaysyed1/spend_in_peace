@@ -1,71 +1,108 @@
-"use client"
+"use client";
 
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
-import { Button } from "@/components/ui/button"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { InputOTP, InputOTPSlot } from "@/components/ui/input-otp"
-import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
-import { useToast } from "@/hooks/use-toast"
-import axios from "axios"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { InputOTP, InputOTPSlot } from "@/components/ui/input-otp";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import axios from "axios";
+import { signIn } from "next-auth/react";
 
 const otpSchema = z.object({
   otp: z.string().length(6, { message: "OTP must be 6 digits" }),
-})
+});
 
-type FormValues = z.infer<typeof otpSchema>
+type FormValues = z.infer<typeof otpSchema>;
 
 export default function OTPVerificationForm() {
-  const router = useRouter()
-  const { toast } = useToast()
-  const [email, setEmail] = useState<string | null>(null)
-  const [isVerifying, setIsVerifying] = useState(false)
-  const [isResending, setIsResending] = useState(false)
-  const [countdown, setCountdown] = useState(0)
+  const router = useRouter();
+  const { toast } = useToast();
+  const [email, setEmail] = useState<string | null>(null);
+  const [password, setPassword] = useState<string | null>(null);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const [countdown, setCountdown] = useState(0);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(otpSchema),
     defaultValues: {
       otp: "",
     },
-  })
+  });
 
   useEffect(() => {
-    const storedEmail = sessionStorage.getItem("verificationEmail")
-    if (!storedEmail) {
-      router.push("/signup")
-      return
+    const storedEmail = sessionStorage.getItem("verificationEmail");
+    const storedPassword = sessionStorage.getItem("tempPassword");
+    if (!storedEmail || !storedPassword) {
+      router.push("/signup");
+      return;
     }
-    setEmail(storedEmail)
-  }, [router])
+    setEmail(storedEmail);
+    setPassword(storedPassword);
+  }, [router]);
 
   async function onSubmit(values: FormValues) {
-    if (!email) return
+    if (!email || !password) return;
 
     try {
-      setIsVerifying(true)
+      setIsVerifying(true);
+      // First verify email
       await axios.post("/api/auth/verify-email", {
         email,
         code: values.otp,
-      })
+      });
+
+      // Then attempt to login
+      const signInResult = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (signInResult?.error) {
+        toast({
+          title: "Warning",
+          description: "Email verified but login failed. Please login manually.",
+          variant: "default",
+        });
+        sessionStorage.removeItem("verificationEmail");
+        sessionStorage.removeItem("tempPassword");
+        router.push("/login");
+        return;
+      }
 
       toast({
         title: "Success",
-        description: "Email verified successfully. You can now login.",
-      })
+        description: "Email verified and logged in successfully.",
+      });
 
-      sessionStorage.removeItem("verificationEmail")
-      router.push("/login")
+      // Clean up session storage
+      sessionStorage.removeItem("verificationEmail");
+      sessionStorage.removeItem("tempPassword");
+      
+      // Redirect to dashboard
+      router.push("/dashboard");
+      router.refresh();
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.response?.data?.error || "Invalid verification code",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsVerifying(false)
+      setIsVerifying(false);
     }
   }
 
@@ -73,43 +110,43 @@ export default function OTPVerificationForm() {
   useEffect(() => {
     if (countdown > 0) {
       const timer = setInterval(() => {
-        setCountdown((current) => current - 1)
-      }, 1000)
-      return () => clearInterval(timer)
+        setCountdown((current) => current - 1);
+      }, 1000);
+      return () => clearInterval(timer);
     }
-  }, [countdown])
+  }, [countdown]);
 
   const handleResendCode = async () => {
-    if (!email || countdown > 0) return
+    if (!email || countdown > 0) return;
 
     try {
-      setIsResending(true)
-      await axios.post("/api/auth/resend-code", { email })
-      
+      setIsResending(true);
+      await axios.post("/api/auth/resend-code", { email });
+
       toast({
         title: "Success",
         description: "New verification code sent to your email",
-      })
-      setCountdown(60) // Start 60 second countdown
+      });
+      setCountdown(60); // Start 60 second countdown
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.response?.data?.error || "Failed to resend code",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsResending(false)
+      setIsResending(false);
     }
-  }
+  };
 
   if (!email) {
-    return null
+    return null;
   }
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-      <FormField
+        <FormField
           control={form.control}
           name="otp"
           render={({ field }) => (
@@ -135,11 +172,7 @@ export default function OTPVerificationForm() {
           )}
         />
         <div className="space-y-2">
-          <Button 
-            type="submit" 
-            className="w-full"
-            disabled={isVerifying}
-          >
+          <Button type="submit" className="w-full" disabled={isVerifying}>
             {isVerifying ? "Verifying..." : "Verify Email"}
           </Button>
           <Button
@@ -149,12 +182,10 @@ export default function OTPVerificationForm() {
             onClick={handleResendCode}
             disabled={isResending || countdown > 0}
           >
-            {countdown > 0 
-              ? `Resend Code (${countdown}s)` 
-              : "Resend Code"}
+            {countdown > 0 ? `Resend Code (${countdown}s)` : "Resend Code"}
           </Button>
         </div>
       </form>
     </Form>
-  )
+  );
 }
