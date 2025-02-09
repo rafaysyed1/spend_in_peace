@@ -1,54 +1,60 @@
 "use client"
+
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import * as z from "zod"
+import { RegisterUserSchema } from "@/lib/validations/auth"
+import type { RegisterUserInput } from "@/lib/validations/auth"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-
-const signupSchema = z.object({
-  name: z.string().min(2, { message: "Name must be at least 2 characters" }),
-  email: z.string().email({ message: "Invalid email address" }),
-  password: z.string().min(8, { message: "Password must be at least 8 characters" }),
-})
+import { useState } from "react"
+import axios from "axios"
+import { useToast } from "@/hooks/use-toast"
 
 export default function SignupForm() {
   const router = useRouter()
+  const { toast } = useToast()
+  const [isLoading, setIsLoading] = useState(false)
 
-  const form = useForm<z.infer<typeof signupSchema>>({
-    resolver: zodResolver(signupSchema),
+  const form = useForm<RegisterUserInput>({
+    resolver: zodResolver(RegisterUserSchema),
     defaultValues: {
-      name: "",
       email: "",
       password: "",
     },
   })
 
-  function onSubmit(values: z.infer<typeof signupSchema>) {
-    console.log(values)
-    // Handle signup logic here
-    // After successful signup, redirect to OTP verification page
-    router.push("/verify-email")
+  async function onSubmit(values: RegisterUserInput) {
+    try {
+      setIsLoading(true)
+      const response = await axios.post('/api/auth/register', values)
+      
+      // Store email in sessionStorage for verification page
+      sessionStorage.setItem('verificationEmail', values.email)
+      
+      toast({
+        title: "Success",
+        description: "Please check your email for verification code.",
+        variant: "default",
+      })
+      
+      router.push("/verify-email")
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.response?.data?.error || "Something went wrong",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Name</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter your name" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
         <FormField
           control={form.control}
           name="email"
@@ -69,18 +75,24 @@ export default function SignupForm() {
             <FormItem>
               <FormLabel>Password</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="Create a password" {...field} />
+                <Input 
+                  type="password" 
+                  placeholder="Create a password" 
+                  {...field} 
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full">
-          Sign Up
+        <Button type="submit" className="w-full" disabled={isLoading}>
+          {isLoading ? "Creating account..." : "Sign Up"}
         </Button>
       </form>
       <div className="mt-4 text-center">
-        <span className="text-sm text-muted-foreground">Already have an account? </span>
+        <span className="text-sm text-muted-foreground">
+          Already have an account?{" "}
+        </span>
         <Link href="/login" className="text-sm text-primary hover:underline">
           Login
         </Link>
@@ -88,4 +100,3 @@ export default function SignupForm() {
     </Form>
   )
 }
-
