@@ -5,9 +5,11 @@ import { motion } from "framer-motion"
 import { DollarSign  } from "lucide-react"
 
 export function FloatingPaper({ count = 5 }) {
+  const [mounted, setMounted] = useState(false)
   const [dimensions, setDimensions] = useState({ width: 1200, height: 800 })
 
   useEffect(() => {
+    setMounted(true)
     // Update dimensions only on client side
     setDimensions({
       width: window.innerWidth,
@@ -24,6 +26,9 @@ export function FloatingPaper({ count = 5 }) {
     window.addEventListener("resize", handleResize)
     return () => window.removeEventListener("resize", handleResize)
   }, [])
+
+   // Don't render anything during SSR or before mounting
+   if (!mounted) return null
 
   return (
     <div className="relative w-full h-full">

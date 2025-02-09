@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { motion } from "framer-motion"
 import { FileText, Sparkles } from "lucide-react"
@@ -7,11 +8,17 @@ import { FloatingPaper } from "@/components/floating-paper"
 import { RoboAnimation } from "@/components/robo-animation"
 
 export default function Hero() {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   return (
     <div className="relative min-h-[calc(100vh-76px)] flex items-center">
       {/* Floating papers background */}
       <div className="absolute inset-0 overflow-hidden">
-        <FloatingPaper count={6} />
+        {mounted && <FloatingPaper count={6} />}
       </div>
 
       <div className="container mx-auto px-6 relative z-10">
