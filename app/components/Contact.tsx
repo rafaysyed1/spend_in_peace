@@ -46,8 +46,8 @@ export default function ContactUsForm() {
   return (
     <section className="border-b border-white/10 py-32 border-t">
       <div className="container mx-auto text-center max-w-3xl">
-        <h2 className="font-bold text-3xl sm:text-4xl md:text-5xl leading-tight">Get in Touch</h2>
-        <p className="mt-4 text-gray-400 sm:text-lg">
+        <h2 className="font-bold text-3xl leading-[1.1] sm:text-3xl md:text-5xl">Get in Touch</h2>
+        <p className="mt-4 text-muted-foreground sm:text-lg">
           Have questions? Fill out the form below, and we’ll get back to you as soon as possible.
         </p>
       </div>
