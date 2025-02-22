@@ -24,11 +24,11 @@ export default function Navbar() {
 
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center space-x-8">
-          <Link href="/features" className="text-gray-300 hover:text-white transition-colors">Features</Link>
-          <Link href="/how-it-works" className="text-gray-300 hover:text-white transition-colors">How it Works</Link>
-          <Link href="/team" className="text-gray-300 hover:text-white transition-colors">Team</Link>
-          <Link href="/about" className="text-gray-300 hover:text-white transition-colors">About Us</Link>
-          <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">Contact Us</Link>
+          <Link href="#" className="text-gray-300 hover:text-white transition-colors">Features</Link>
+          <Link href="#" className="text-gray-300 hover:text-white transition-colors">Team</Link>
+          <Link href="#" className="text-gray-300 hover:text-white transition-colors">How It Works</Link>
+          <Link href="#" className="text-gray-300 hover:text-white transition-colors">Our Mission</Link>
+          <Link href="#" className="text-gray-300 hover:text-white transition-colors">Contact Us</Link>
         </div>
 
         <div className="hidden md:flex items-center space-x-4">
@@ -71,17 +71,20 @@ export default function Navbar() {
               className="fixed top-[76px] left-0 right-0 bg-background border-b border-white/10 p-4 z-40 md:hidden"
             >
               <div className="flex flex-col space-y-4">
-                <MobileNavLink href="/features" onClick={() => setIsOpen(false)}>
+                <MobileNavLink href="#" onClick={() => setIsOpen(false)}>
                   Features
                 </MobileNavLink>
-                <MobileNavLink href="/how-it-works" onClick={() => setIsOpen(false)}>
-                  How it Works
+                <MobileNavLink href="#" onClick={() => setIsOpen(false)}>
+                  Team
                 </MobileNavLink>
-                <MobileNavLink href="/examples" onClick={() => setIsOpen(false)}>
-                  Examples
+                <MobileNavLink href="#" onClick={() => setIsOpen(false)}>
+                  How It Works
                 </MobileNavLink>
-                <MobileNavLink href="/pricing" onClick={() => setIsOpen(false)}>
-                  Pricing
+                <MobileNavLink href="#" onClick={() => setIsOpen(false)}>
+                  Our Mission
+                </MobileNavLink>
+                <MobileNavLink href="#" onClick={() => setIsOpen(false)}>
+                  Contact Us
                 </MobileNavLink>
                 <Link href="/login" onClick={() => setIsOpen(false)}>
                   <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white">
