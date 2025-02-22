@@ -5,6 +5,9 @@ import CTA from "@/components/cta"
 import Footer from "@/components/footer"
 import GradientBackground from "@/components/gradient-background"
 import ContactUs from "../components/Contact"
+import OurMission from "../components/Mission"
+import HowItWorks from "../components/HowItWorks"
+import OurTeam from "../components/Team"
 
 export default function Home() {
   return (
@@ -16,6 +19,9 @@ export default function Home() {
         <Navbar />
         <Hero />
         <Features />
+        <OurTeam/>
+        <OurMission/>
+        <HowItWorks/>
         <CTA />
         <ContactUs/>
         <Footer />
